@@ -1,0 +1,42 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.class
+*.pyc
+.python-version
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# 日志文件
+*.log
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# ============ 重点：排除配置目录 ============
+config/
+# !config/config.py   # 如果 config.py 是代码文件，去掉注释
+
+# ============ 项目特定 ============
+data/
+*.db
+*.sqlite3
+uploads/
+tmp/
+temp/

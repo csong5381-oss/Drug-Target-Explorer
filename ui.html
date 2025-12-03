@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DrugTarget Explorer - Drug-Target Relationship Extraction System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Navigation Bar */
+        .navbar {
+            background-color: #006EC0;
+            padding: 15px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-menu li {
+            margin-left: 25px;
+        }
+
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            transition: color 0.3s;
+        }
+
+        .nav-menu a:hover {
+            color: #e0e0e0;
+        }
+
+        /* Language Selector */
+        .language-selector {
+            margin-left: 25px;
+        }
+
+        .language-selector select {
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            background-color: white;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        /* Search Section */
+        .search-section {
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .search-input-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 10px;
+        }
+
+        .search-label {
+            font-weight: bold;
+            color: #333;
+            min-width: 180px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .search-button {
+            padding: 12px 24px;
+            background-color: #5B9BD5;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            white-space: nowrap;
+        }
+
+        .search-button:hover {
+            background-color: #4a8ac4;
+        }
+
+        .search-status {
+            color: #666;
+            font-style: italic;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+
+        /* Filter Section */
+        .filter-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 200px;
+        }
+
+        .filter-label {
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .filter-select, .filter-checkbox, .year-input {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .year-input {
+            width: 80px;
+        }
+
+        .year-range-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .year-separator {
+            color: #666;
+        }
+
+        .confidence-filters {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .confidence-option {
+            display: flex;
+            align-items: center;
+        }
+
+        .confidence-option input {
+            margin-right: 8px;
+        }
+
+        .confidence-option label {
+            font-size: 14px;
+        }
+
+        /* Custom Range Container - Hidden by default */
+        .custom-range-container {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+
+        .custom-range-container.show {
+            display: block;
+        }
+
+        /* Results Section */
+        .results-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .results-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .results-summary {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .results-table th,
+        .results-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .results-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .results-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .confidence-high {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .confidence-medium {
+            background-color: #fff8e1;
+            color: #f57f17;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .confidence-low {
+            background-color: #fff3e0;
+            color: #ef6c00;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .pubmed-link {
+            color: #0066CC;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .pubmed-link:hover {
+            color: #004499;
+            text-decoration: underline;
+        }
+
+        .view-literature-btn {
+            background-color: #5B9BD5;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 13px;
+        }
+
+        .view-literature-btn:hover {
+            background-color: #4a8ac4;
+        }
+
+        /* Literature Panel */
+        .literature-panel {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 10px;
+            padding: 15px;
+            display: none;
+        }
+
+        .literature-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .literature-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .literature-title {
+            color: #0066CC;
+            text-decoration: none;
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+            font-size: 15px;
+        }
+
+        .literature-title:hover {
+            color: #004499;
+            text-decoration: underline;
+        }
+
+        .literature-meta {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+
+        .literature-evidence {
+            background-color: #f0f8ff;
+            padding: 10px;
+            border-left: 3px solid #5B9BD5;
+            margin: 10px 0;
+            font-style: italic;
+            font-size: 14px;
+        }
+
+        .literature-confidence {
+            color: #666;
+            font-size: 12px;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: #000;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            margin-top: 30px;
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #5B9BD5;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Messages */
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border: 1px solid #f5c6cb;
+            display: none;
+        }
+
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border: 1px solid #c3e6cb;
+            display: none;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .export-btn {
+            background-color: #28a745;
+            margin-left: 10px;
+        }
+
+        .export-btn:hover {
+            background-color: #218838;
+        }
+
+        /* No Results Message */
+        .no-results {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+            font-style: italic;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #dee2e6;
+        }
+
+        .no-results h3 {
+            color: #495057;
+            margin-bottom: 15px;
+        }
+
+        .no-results ul {
+            text-align: left;
+            display: inline-block;
+            margin-top: 10px;
+            padding-left: 20px;
+        }
+
+        .no-results li {
+            margin-bottom: 8px;
+            color: #6c757d;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .filter-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-group {
+                width: 100%;
+                margin-bottom: 15px;
+            }
+
+            .search-input-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-label {
+                margin-bottom: 5px;
+            }
+
+            .search-input {
+                width: 100%;
+                margin-left: 0;
+                margin-top: 5px;
+            }
+
+            .search-button {
+                width: 100%;
+                margin-top: 10px;
+            }
+
+            .results-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .nav-menu {
+                flex-direction: column;
+                gap: 10px;
+                align-items: center;
+            }
+
+            .nav-menu li {
+                margin-left: 0;
+            }
+        }
+
+        /* Instruction Text */
+        .instruction-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="logo">DrugTarget Explorer</div>
+        <ul class="nav-menu">
+            <li><a href="#">Home</a></li>
+            <li><a href="#">Documentation</a></li>
+            <li><a href="#">Help</a></li>
+            <li><a href="#">About</a></li>
+            <li class="language-selector">
+                <select id="languageSelect" onchange="changeLanguage(this.value)">
+                    <option value="en">English</option>
+                    <option value="zh">中文</option>
+                </select>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Search Section -->
+        <section class="search-section">
+            <div class="search-input-container">
+                <span class="search-label">Enter Drug Name</span>
+                <input type="text" class="search-input" id="drugInput" placeholder="e.g., Aspirin, Ibuprofen, Metformin" value="Aspirin">
+                <button class="search-button" onclick="performSearch()">Search Targets</button>
+                <button class="search-button" onclick="performDebugSearch()" style="background-color: #28a745;">Debug Search</button>
+            </div>
+            <div class="search-status" id="searchStatus">Ready - Enter drug name to start search</div>
+            <div class="loading" id="loading">
+                <div class="loading-spinner"></div>
+                <p>Searching PubMed literature and analyzing...</p>
+            </div>
+            <div class="error-message" id="errorMessage"></div>
+            <div class="success-message" id="successMessage"></div>
+        </section>
+
+        <!-- Filter Section -->
+        <section class="filter-section">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label class="filter-label">Action Type</label>
+                    <select class="filter-select" id="actionType">
+                        <option>All Types</option>
+                        <option>Inhibitor</option>
+                        <option>Agonist</option>
+                        <option>Antagonist</option>
+                        <option>Modulator</option>
+                        <option>Blocker</option>
+                        <option>Activator</option>
+                        <option>Promoter</option>
+                        <option>Inducer</option>
+                        <option>Stabilizer</option>
+                        <option>Destabilizer</option>
+                        <option>Chelator</option>
+                        <option>Transporter</option>
+                        <option>Enzyme</option>
+                        <option>Receptor</option>
+                        <option>Ion Channel</option>
+                        <option>Structural Protein</option>
+                        <option>Other</option>
+                    </select>
+                    <div class="instruction-text">Filter by mechanism of action</div>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Confidence Level</label>
+                    <div class="confidence-filters">
+                        <div class="confidence-option">
+                            <input type="checkbox" id="highConf" checked>
+                            <label for="highConf">High Confidence</label>
+                        </div>
+                        <div class="confidence-option">
+                            <input type="checkbox" id="medConf" checked>
+                            <label for="medConf">Medium Confidence</label>
+                        </div>
+                        <div class="confidence-option">
+                            <input type="checkbox" id="lowConf" checked>
+                            <label for="lowConf">Low Confidence</label>
+                        </div>
+                    </div>
+                    <div class="instruction-text">Filter by evidence strength</div>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Publication Date</label>
+                    <select class="filter-select" id="yearRange" onchange="toggleCustomRange()">
+                        <option value="all">All Years</option>
+                        <option value="1">Last 1 Year</option>
+                        <option value="5">Last 5 Years</option>
+                        <option value="10">Last 10 Years</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+
+                    <div class="custom-range-container" id="customRangeContainer">
+                        <div class="year-range-container">
+                            <input type="number" class="year-input" id="startYear" placeholder="Start" min="1900" max="2025" value="2000">
+                            <span class="year-separator">to</span>
+                            <input type="number" class="year-input" id="endYear" placeholder="End" min="1900" max="2025" value="2024">
+                        </div>
+                        <div class="instruction-text">Enter start and end years (1900-2025)</div>
+                    </div>
+                    <div class="instruction-text">Filter by publication date</div>
+                </div>
+
+                <div class="filter-group">
+                    <button class="search-button" onclick="resetFilters()" style="margin-top: 32px; background-color: #6c757d;">Reset Filters</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Results Section -->
+        <section class="results-section" id="resultsSection" style="display: none;">
+            <div class="results-header">
+                <h3 class="results-title">Target Extraction Results</h3>
+                <div>
+                    <div class="results-summary" id="resultsSummary"></div>
+                    <button class="search-button export-btn" onclick="exportResults()">Export CSV</button>
+                </div>
+            </div>
+            <div id="resultsContent">
+                <!-- Results will be populated by JavaScript -->
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Copyright © 2025. DrugTarget Explorer All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        // Backend API base URL
+        const API_BASE_URL = 'http://localhost:5000/api';
+
+        // =============================================
+        // Search Functions
+        // =============================================
+        async function performSearch() {
+            const drugName = document.getElementById('drugInput').value.trim();
+            if (!drugName) {
+                showError('Please enter a drug name');
+                return;
+            }
+
+            // Show loading state
+            showLoading(true);
+            hideError();
+            hideSuccess();
+            hideResults();
+
+            try {
+                updateSearchStatus('Searching PubMed literature...');
+
+                // Send request to backend API
+                const response = await fetch(`${API_BASE_URL}/search`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        drug_name: drugName
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    updateSearchStatus('Search completed!');
+                    showSuccess(`Found ${data.summary.total_targets} targets`);
+                    // Update interface with real data
+                    updateResultsWithRealData(data);
+                } else {
+                    throw new Error(data.error || 'Search failed');
+                }
+
+            } catch (error) {
+                console.error('Search error:', error);
+                showError('Search failed: ' + error.message);
+                updateSearchStatus('Search failed');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function performDebugSearch() {
+            const drugName = document.getElementById('drugInput').value.trim() || 'Aspirin';
+
+            showLoading(true);
+            hideError();
+            hideSuccess();
+            hideResults();
+
+            try {
+                updateSearchStatus('Using debug mode...');
+
+                const response = await fetch(`${API_BASE_URL}/debug/search`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        drug_name: drugName
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    updateSearchStatus('Debug search completed!');
+                    showSuccess(`Debug mode: Found ${data.summary.total_targets} simulated targets`);
+                    updateResultsWithRealData(data);
+                }
+
+            } catch (error) {
+                console.error('Debug search error:', error);
+                showError('Debug search failed: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // =============================================
+        // Results Display Functions
+        // =============================================
+        function updateResultsWithRealData(data) {
+            const resultsContent = document.getElementById('resultsContent');
+
+            // Save current results for export
+            window.currentResults = data.results;
+
+            if (!data.results || data.results.length === 0) {
+                resultsContent.innerHTML = `
+                    <div class="no-results">
+                        <h3>No Related Targets Found</h3>
+                        <p>Please try:</p>
+                        <ul style="text-align: left; display: inline-block; margin-top: 10px;">
+                            <li>Check drug name spelling</li>
+                            <li>Try other drug names</li>
+                            <li>Use debug mode to test interface</li>
+                        </ul>
+                    </div>
+                `;
+                showResults();
+                return;
+            }
+
+            // Create table
+            let tableHTML = `
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Target Name</th>
+                            <th>Target Type</th>
+                            <th>Mechanism</th>
+                            <th>Confidence</th>
+                            <th>Supporting Articles</th>
+                            <th>Latest Year</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            // Fill table rows
+            data.results.forEach((target, index) => {
+                const confidenceClass = `confidence-${target.confidence_level}`;
+                const confidenceText = getConfidenceText(target.confidence_level);
+
+                tableHTML += `
+                    <tr>
+                        <td><strong>${target.target_name}</strong></td>
+                        <td>${target.target_type}</td>
+                        <td title="${target.mechanism || ''}">${target.mechanism ? (target.mechanism.length > 30 ? target.mechanism.substring(0, 30) + '...' : target.mechanism) : 'Not specified'}</td>
+                        <td><span class="${confidenceClass}">${confidenceText}</span></td>
+                        <td>1 article</td>
+                        <td>${target.year}</td>
+                        <td><button class="view-literature-btn" onclick="toggleLiteraturePanel(${index})">View Literature</button></td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `</tbody></table>`;
+
+            // Create literature panels
+            let literatureHTML = '';
+            data.results.forEach((target, index) => {
+                const evidence = target.evidence ?
+                    (target.evidence.length > 300 ? target.evidence.substring(0, 300) + '...' : target.evidence)
+                    : 'No evidence text available';
+
+                literatureHTML += `
+                    <div class="literature-panel" id="literaturePanel${index}" style="display: none;">
+                        <h4>${target.target_name} Related Literature</h4>
+                        <div class="literature-item">
+                            <a class="literature-title" href="https://pubmed.ncbi.nlm.nih.gov/${target.pubmed_id}/" target="_blank">
+                                ${target.title || `Literature ${target.pubmed_id}`}
+                            </a>
+                            <div class="literature-meta">PMID: ${target.pubmed_id} | Publication Year: ${target.year}</div>
+                            <div class="literature-evidence">"${evidence}"</div>
+                            <div class="literature-confidence">Confidence Description: ${getConfidenceDescription(target.confidence_level)}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            resultsContent.innerHTML = tableHTML + literatureHTML;
+
+            // Update results summary
+            document.getElementById('resultsSummary').textContent =
+                `Found ${data.summary.total_targets} targets (High:${data.summary.high_confidence} Medium:${data.summary.medium_confidence} Low:${data.summary.low_confidence})`;
+
+            // Show results section
+            showResults();
+
+            // Apply filters
+            applyFilters();
+        }
+
+        // =============================================
+        // Filter Functions
+        // =============================================
+        function applyFilters() {
+            // Get filter values
+            const highConfChecked = document.getElementById('highConf').checked;
+            const medConfChecked = document.getElementById('medConf').checked;
+            const lowConfChecked = document.getElementById('lowConf').checked;
+            const actionType = document.getElementById('actionType').value;
+            const yearRange = document.getElementById('yearRange').value;
+
+            let startYear, endYear;
+
+            // Get year range values
+            if (yearRange === 'custom') {
+                startYear = parseInt(document.getElementById('startYear').value);
+                endYear = parseInt(document.getElementById('endYear').value);
+            }
+
+            const rows = document.querySelectorAll('.results-table tbody tr');
+            let visibleCount = 0;
+            const totalCount = rows.length;
+
+            rows.forEach(row => {
+                const confidenceCell = row.cells[3];
+                const mechanismCell = row.cells[2];
+                const yearCell = row.cells[5];
+
+                const confidenceLevel = confidenceCell.querySelector('span').className.replace('confidence-', '');
+                const mechanismText = mechanismCell.textContent.toLowerCase();
+                const yearText = yearCell.textContent;
+
+                let shouldShow = true;
+
+                // 1. Confidence Level Filter
+                if (!highConfChecked && confidenceLevel === 'high') shouldShow = false;
+                if (!medConfChecked && confidenceLevel === 'medium') shouldShow = false;
+                if (!lowConfChecked && confidenceLevel === 'low') shouldShow = false;
+
+                // 2. Action Type Filter
+                if (actionType !== 'All Types' && actionType !== 'Other') {
+                    const actionKeywords = {
+                        'Inhibitor': ['inhibitor', 'inhibit', 'inhibition', 'suppress', 'suppression'],
+                        'Agonist': ['agonist', 'activate', 'activation', 'stimulate', 'stimulation'],
+                        'Antagonist': ['antagonist', 'block', 'blocking', 'antagonize', 'antagonism'],
+                        'Modulator': ['modulator', 'modulate', 'modulation', 'regulate', 'regulation'],
+                        'Blocker': ['blocker', 'block', 'blocking', 'obstruct', 'obstruction'],
+                        'Activator': ['activator', 'activate', 'activation', 'active'],
+                        'Promoter': ['promoter', 'promote', 'promotion', 'enhance', 'enhancement'],
+                        'Inducer': ['inducer', 'induce', 'induction', 'initiate', 'initiation'],
+                        'Stabilizer': ['stabilizer', 'stabilize', 'stabilization', 'stable'],
+                        'Destabilizer': ['destabilizer', 'destabilize', 'destabilization', 'unstable'],
+                        'Chelator': ['chelator', 'chelate', 'chelation', 'bind'],
+                        'Transporter': ['transporter', 'transport', 'carrier', 'uptake'],
+                        'Enzyme': ['enzyme', 'catalytic', 'catalyze'],
+                        'Receptor': ['receptor', 'binding site', 'ligand'],
+                        'Ion Channel': ['channel', 'ion channel', 'pore'],
+                        'Structural Protein': ['structural', 'scaffold', 'framework']
+                    };
+
+                    const keywords = actionKeywords[actionType] || [];
+                    if (keywords.length > 0) {
+                        const hasKeyword = keywords.some(keyword =>
+                            mechanismText.includes(keyword.toLowerCase())
+                        );
+                        if (!hasKeyword) shouldShow = false;
+                    }
+                }
+
+                // 3. Publication Date Filter
+                if (yearRange !== 'all' && yearText !== 'Unknown') {
+                    const year = parseInt(yearText);
+                    if (!isNaN(year)) {
+                        const currentYear = new Date().getFullYear();
+
+                        let isInRange = false;
+
+                        switch(yearRange) {
+                            case '1':
+                                isInRange = year >= (currentYear - 1);
+                                break;
+                            case '5':
+                                isInRange = year >= (currentYear - 5);
+                                break;
+                            case '10':
+                                isInRange = year >= (currentYear - 10);
+                                break;
+                            case 'custom':
+                                if (!isNaN(startYear) && !isNaN(endYear)) {
+                                    isInRange = year >= startYear && year <= endYear;
+                                }
+                                break;
+                        }
+
+                        if (!isInRange) shouldShow = false;
+                    } else {
+                        // If year is not a number and date filter is selected, hide
+                        shouldShow = false;
+                    }
+                }
+
+                // Apply show/hide
+                row.style.display = shouldShow ? '' : 'none';
+                if (shouldShow) visibleCount++;
+            });
+
+            // Update results summary
+            updateResultsSummary(visibleCount, totalCount);
+
+            // Show no results message if needed
+            if (visibleCount === 0) {
+                showNoResultsMessage();
+            } else {
+                // Remove any existing "no results" message
+                const noResultsDiv = document.querySelector('.no-results');
+                if (noResultsDiv) {
+                    noResultsDiv.remove();
+                }
+            }
+        }
+
+        // Toggle custom range input
+        function toggleCustomRange() {
+            const yearRange = document.getElementById('yearRange').value;
+            const customRangeContainer = document.getElementById('customRangeContainer');
+
+            if (yearRange === 'custom') {
+                customRangeContainer.classList.add('show');
+            } else {
+                customRangeContainer.classList.remove('show');
+            }
+
+            // Apply filters when changing range type
+            applyFilters();
+        }
+
+        // Update results summary display
+        function updateResultsSummary(visibleCount, totalCount) {
+            const summaryElement = document.getElementById('resultsSummary');
+
+            if (visibleCount === totalCount) {
+                summaryElement.textContent = `Found ${visibleCount} targets`;
+            } else {
+                summaryElement.textContent = `Found ${visibleCount} targets (of ${totalCount} total, filtered)`;
+            }
+        }
+
+        // No results message
+        function showNoResultsMessage() {
+            const resultsContent = document.getElementById('resultsContent');
+            const noResultsDiv = document.createElement('div');
+            noResultsDiv.className = 'no-results';
+            noResultsDiv.innerHTML = `
+                <h3>No Matching Results</h3>
+                <p>Please try:</p>
+                <ul style="text-align: left; display: inline-block; margin-top: 10px;">
+                    <li>Adjust filter conditions</li>
+                    <li>Unselect some filter options</li>
+                    <li>Click "Reset Filters" to view all results</li>
+                </ul>
+            `;
+
+            const existingNoResults = resultsContent.querySelector('.no-results');
+            if (!existingNoResults) {
+                resultsContent.appendChild(noResultsDiv);
+            }
+        }
+
+        // Reset filters
+        function resetFilters() {
+            // Reset confidence checkboxes
+            document.getElementById('highConf').checked = true;
+            document.getElementById('medConf').checked = true;
+            document.getElementById('lowConf').checked = true;
+
+            // Reset dropdowns
+            document.getElementById('actionType').value = 'All Types';
+            document.getElementById('yearRange').value = 'all';
+
+            // Hide custom range
+            document.getElementById('customRangeContainer').classList.remove('show');
+
+            // Reset year inputs to defaults
+            document.getElementById('startYear').value = '2000';
+            document.getElementById('endYear').value = '2024';
+
+            // Apply filters
+            applyFilters();
+
+            // Remove any "no results" message
+            const noResultsDiv = document.querySelector('.no-results');
+            if (noResultsDiv) {
+                noResultsDiv.remove();
+            }
+
+            // Show success message
+            showSuccess('Filters reset to default, showing all results');
+        }
+
+        // =============================================
+        // Utility Functions
+        // =============================================
+        function getConfidenceText(level) {
+            const confidenceMap = {
+                'high': 'High',
+                'medium': 'Medium',
+                'low': 'Low'
+            };
+            return confidenceMap[level] || 'Medium';
+        }
+
+        function getConfidenceDescription(level) {
+            const descriptions = {
+                'high': 'The target is explicitly and directly mentioned in the literature with experimental evidence',
+                'medium': 'The target is indirectly mentioned or inferred based on known mechanisms',
+                'low': 'The relationship is based on correlation or weak evidence'
+            };
+            return descriptions[level] || 'Medium evidence strength';
+        }
+
+        function toggleLiteraturePanel(index) {
+            const panel = document.getElementById(`literaturePanel${index}`);
+            if (panel.style.display === 'block') {
+                panel.style.display = 'none';
+            } else {
+                // Close other panels
+                document.querySelectorAll('.literature-panel').forEach(p => {
+                    p.style.display = 'none';
+                });
+                panel.style.display = 'block';
+            }
+        }
+
+        async function exportResults() {
+            const drugName = document.getElementById('drugInput').value.trim();
+            const results = window.currentResults;
+
+            if (!results || results.length === 0) {
+                showError('No data available for export');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/export`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        drug_name: drugName,
+                        results: results
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    downloadCSV(data.csv_content, data.filename);
+                    showSuccess('Export successful!');
+                } else {
+                    throw new Error('Export failed');
+                }
+            } catch (error) {
+                showError('Export failed: ' + error.message);
+            }
+        }
+
+        function downloadCSV(csvContent, filename) {
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function updateSearchStatus(message) {
+            document.getElementById('searchStatus').textContent = message;
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            const successElement = document.getElementById('successMessage');
+            successElement.textContent = message;
+            successElement.style.display = 'block';
+        }
+
+        function hideSuccess() {
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        function showResults() {
+            document.getElementById('resultsSection').style.display = 'block';
+        }
+
+        function hideResults() {
+            document.getElementById('resultsSection').style.display = 'none';
+        }
+
+        // Language switcher (placeholder)
+        function changeLanguage(lang) {
+            if (lang === 'zh') {
+                // Redirect to Chinese version or reload with Chinese content
+                alert('Chinese version will be available soon. Currently only English is supported.');
+                document.getElementById('languageSelect').value = 'en';
+            }
+            // For now, only English is fully implemented
+        }
+
+        // =============================================
+        // Event Listeners
+        // =============================================
+        // Search box enter key
+        document.getElementById('drugInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        // Filter event listeners
+        document.getElementById('highConf').addEventListener('change', applyFilters);
+        document.getElementById('medConf').addEventListener('change', applyFilters);
+        document.getElementById('lowConf').addEventListener('change', applyFilters);
+        document.getElementById('actionType').addEventListener('change', applyFilters);
+        document.getElementById('yearRange').addEventListener('change', applyFilters);
+
+        // Custom year range inputs
+        document.getElementById('startYear').addEventListener('change', applyFilters);
+        document.getElementById('endYear').addEventListener('change', applyFilters);
+
+        // Initialize custom range visibility
+        toggleCustomRange();
+
+        // =============================================
+        // Health Check
+        // =============================================
+        async function checkAPIHealth() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`);
+                if (response.ok) {
+                    console.log('✅ Backend API connection normal');
+                    updateSearchStatus('Ready - Backend service normal');
+                } else {
+                    console.warn('⚠️ Backend API connection abnormal');
+                    updateSearchStatus('Ready - Backend service abnormal');
+                }
+            } catch (error) {
+                console.error('❌ Cannot connect to backend API:', error);
+                updateSearchStatus('Ready - Backend service not started');
+                showError('Cannot connect to backend service. Please ensure Flask service is running at http://localhost:5000');
+            }
+        }
+
+        // Page load initialization
+        window.onload = function() {
+            console.log('DrugTarget Explorer loaded');
+            checkAPIHealth();
+        };
+    </script>
+</body>
+</html>
